@@ -1,103 +1,138 @@
-import Image from "next/image";
+"use client"
+
+import Link from "next/link"
+import Image from "next/image"
+import Header from "../components/layout/Header"
+import { useProducts } from "../hooks/useProducts"
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { data: products = [], isLoading, error, refetch } = useProducts()
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(price)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <section className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-800 mb-4">
+            Welcome to Shopper
+          </h1>
+          <p className="text-xl text-gray-600 mb-8">
+            Discover amazing products at great prices
+          </p>
+          <Link
+            href="/products"
+            className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg hover:bg-blue-700 transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+            Shop Now
+          </Link>
+        </section>
+
+        {/* Featured Products */}
+        <section>
+          <h2 className="text-3xl font-bold text-gray-800 mb-8">
+            Featured Products
+          </h2>
+
+          {isLoading && (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading products...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-red-600">Failed to load products</p>
+              <button
+                onClick={() => refetch()}
+                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {!isLoading && !error && products.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-600">No products available</p>
+            </div>
+          )}
+
+          {!isLoading && !error && products.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {products.slice(0, 8).map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <Link href={`/products/${product.id}`}>
+                    <div className="aspect-w-1 aspect-h-1">
+                      <Image
+                        src={product.image_url}
+                        alt={product.name}
+                        width={300}
+                        height={192}
+                        className="w-full h-48 object-cover"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                        {product.description}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-blue-600">
+                          {formatPrice(product.price)}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {product.stock_quantity} in stock
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isLoading && !error && products.length > 8 && (
+            <div className="text-center mt-8">
+              <Link
+                href="/products"
+                className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-colors"
+              >
+                View All Products
+              </Link>
+            </div>
+          )}
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white mt-16">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-4">Shopper</h3>
+            <p className="text-gray-400">
+              Your trusted online shopping destination
+            </p>
+            <p className="text-gray-400 mt-2">
+              © 2024 Shopper. All rights reserved.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
-  );
+  )
 }
