@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AppProviders>{children}</AppProviders>
-        </QueryProvider>
+        </QueryProvider>{" "}
       </body>
     </html>
   )
