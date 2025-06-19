@@ -1,4 +1,3 @@
-import axios from "axios"
 import {
   User,
   Product,
@@ -12,155 +11,260 @@ import {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
 
-// Create axios instance
-const api = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-})
-
-// Add auth token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token")
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+// Custom error class for API errors
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public statusText: string,
+    message?: string
+  ) {
+    super(message || `API Error: ${status} ${statusText}`)
+    this.name = "ApiError"
   }
-  return config
-})
+}
 
-// Handle auth errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
+// Helper function to get auth headers
+const getAuthHeaders = (): HeadersInit => {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
+  return headers
+}
+
+// Helper function to handle fetch responses
+const handleResponse = async <T>(response: Response): Promise<T> => {
+  // Handle 401 errors (unauthorized)
+  if (response.status === 401) {
+    if (typeof window !== "undefined") {
       localStorage.removeItem("token")
       // Only redirect if not already on login/register pages
       if (
-        typeof window !== "undefined" &&
         !window.location.pathname.includes("/login") &&
         !window.location.pathname.includes("/register")
       ) {
         window.location.href = "/login"
       }
     }
-    return Promise.reject(error)
+    throw new ApiError(response.status, response.statusText, "Unauthorized")
   }
-)
+
+  let data: any
+  const contentType = response.headers.get("content-type")
+
+  try {
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json()
+    } else {
+      data = await response.text()
+    }
+  } catch {
+    throw new ApiError(
+      response.status,
+      response.statusText,
+      "Failed to parse response"
+    )
+  }
+
+  if (!response.ok) {
+    const errorMessage =
+      typeof data === "object" && data.error
+        ? data.error
+        : typeof data === "string"
+          ? data
+          : `HTTP ${response.status}: ${response.statusText}`
+
+    throw new ApiError(response.status, response.statusText, errorMessage)
+  }
+
+  return data
+}
+
+// Generic API request function
+const apiRequest = async <T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  const url = `${BASE_URL}${endpoint}`
+
+  const config: RequestInit = {
+    ...options,
+    headers: {
+      ...getAuthHeaders(),
+      ...options.headers,
+    },
+  }
+
+  try {
+    const response = await fetch(url, config)
+    return await handleResponse<T>(response)
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error
+    }
+
+    // Handle network errors
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new ApiError(0, "Network Error", "Unable to connect to server")
+    }
+
+    // Handle other unexpected errors
+    throw new ApiError(
+      500,
+      "Unknown Error",
+      error instanceof Error ? error.message : "An unexpected error occurred"
+    )
+  }
+}
 
 // Auth API
 export const authApi = {
   login: async (data: LoginRequest) => {
-    const response = await api.post("/auth/login", data)
-    return response.data
+    return apiRequest("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
   },
 
   register: async (data: RegisterRequest) => {
-    const response = await api.post("/auth/register", data)
-    return response.data
+    return apiRequest("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
   },
 
   verifyToken: async () => {
-    const response = await api.get("/auth/verify")
-    return response.data
+    return apiRequest("/auth/verify", {
+      method: "GET",
+    })
   },
 }
 
 // Products API
 export const productsApi = {
   getAll: async (): Promise<Product[]> => {
-    const response = await api.get("/products")
-    return response.data
+    return apiRequest<Product[]>("/products", {
+      method: "GET",
+    })
   },
 
   getById: async (id: string): Promise<Product> => {
-    const response = await api.get(`/products/${id}`)
-    return response.data
+    return apiRequest<Product>(`/products/${id}`, {
+      method: "GET",
+    })
   },
 
   create: async (data: CreateProductRequest) => {
-    const response = await api.post("/products", data)
-    return response.data
+    return apiRequest("/products", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
   },
 
   update: async (id: string, data: Partial<CreateProductRequest>) => {
-    const response = await api.put(`/products/${id}`, data)
-    return response.data
+    return apiRequest(`/products/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
   },
 
   delete: async (id: string) => {
-    const response = await api.delete(`/products/${id}`)
-    return response.data
+    return apiRequest(`/products/${id}`, {
+      method: "DELETE",
+    })
   },
 }
 
 // Cart API
 export const cartApi = {
   getItems: async (): Promise<CartItem[]> => {
-    const response = await api.get("/cart")
-    return response.data
+    return apiRequest<CartItem[]>("/cart", {
+      method: "GET",
+    })
   },
 
   addItem: async (productId: string, quantity: number) => {
     console.log("Adding to cart:", { productId, quantity })
-    const response = await api.post("/cart", {
-      product_id: productId,
-      quantity,
+    const result = await apiRequest("/cart", {
+      method: "POST",
+      body: JSON.stringify({
+        product_id: productId,
+        quantity,
+      }),
     })
-    console.log("Add to cart response:", response.data)
-    return response.data
+    console.log("Add to cart response:", result)
+    return result
   },
 
   updateItem: async (itemId: string, quantity: number) => {
-    const response = await api.patch(`/cart/${itemId}`, { quantity })
-    return response.data
+    return apiRequest(`/cart/${itemId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ quantity }),
+    })
   },
 
   removeItem: async (itemId: string) => {
-    const response = await api.delete(`/cart/${itemId}`)
-    return response.data
+    return apiRequest(`/cart/${itemId}`, {
+      method: "DELETE",
+    })
   },
 
   clearCart: async () => {
-    const response = await api.delete("/cart")
-    return response.data
+    return apiRequest("/cart", {
+      method: "DELETE",
+    })
   },
 }
 
 // Orders API
 export const ordersApi = {
   getAll: async (): Promise<Order[]> => {
-    const response = await api.get("/orders")
-    return response.data
+    return apiRequest<Order[]>("/orders", {
+      method: "GET",
+    })
   },
 
   getById: async (id: string): Promise<Order> => {
-    const response = await api.get(`/orders/${id}`)
-    return response.data
+    return apiRequest<Order>(`/orders/${id}`, {
+      method: "GET",
+    })
   },
 
   create: async (data: CreateOrderRequest) => {
-    const response = await api.post("/orders", data)
-    return response.data
+    return apiRequest("/orders", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
   },
 
   updateStatus: async (id: string, status: string) => {
-    const response = await api.put(`/orders/${id}/status`, { status })
-    return response.data
+    return apiRequest(`/orders/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    })
   },
 }
 
 // Users API
 export const usersApi = {
   getProfile: async (): Promise<User> => {
-    const response = await api.get("/users/profile")
-    return response.data
+    return apiRequest<User>("/users/profile", {
+      method: "GET",
+    })
   },
 
   getStats: async () => {
-    const response = await api.get("/users/stats")
-    return response.data
+    return apiRequest("/users/stats", {
+      method: "GET",
+    })
   },
 }
 
-export default api
+// Export the ApiError class for use in components
+export { ApiError as default }

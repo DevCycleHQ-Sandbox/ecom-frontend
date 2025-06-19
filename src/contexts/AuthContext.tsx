@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react"
 import { User, AuthContextType } from "../types"
-import { authApi } from "../services/api"
+import { authApi, ApiError } from "../services/api"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      const response = await authApi.verifyToken()
+      const response = (await authApi.verifyToken()) as any
       setUser(response.user)
     } catch {
       localStorage.removeItem("token")
@@ -35,22 +35,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await authApi.login({ username, password })
+      const response = (await authApi.login({ username, password })) as any
       localStorage.setItem("token", response.token)
       setUser(response.user)
     } catch (error) {
-      const message =
-        error &&
-        typeof error === "object" &&
-        "response" in error &&
-        error.response &&
-        typeof error.response === "object" &&
-        "data" in error.response &&
-        error.response.data &&
-        typeof error.response.data === "object" &&
-        "error" in error.response.data
-          ? String(error.response.data.error)
-          : "Login failed"
+      const message = error instanceof ApiError ? error.message : "Login failed"
       throw new Error(message)
     }
   }
@@ -61,22 +50,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string
   ) => {
     try {
-      const response = await authApi.register({ username, email, password })
+      const response = (await authApi.register({
+        username,
+        email,
+        password,
+      })) as any
       localStorage.setItem("token", response.token)
       setUser(response.user)
     } catch (error) {
       const message =
-        error &&
-        typeof error === "object" &&
-        "response" in error &&
-        error.response &&
-        typeof error.response === "object" &&
-        "data" in error.response &&
-        error.response.data &&
-        typeof error.response.data === "object" &&
-        "error" in error.response.data
-          ? String(error.response.data.error)
-          : "Registration failed"
+        error instanceof ApiError ? error.message : "Registration failed"
       throw new Error(message)
     }
   }

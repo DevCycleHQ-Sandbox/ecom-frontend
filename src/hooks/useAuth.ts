@@ -7,7 +7,7 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: (data: LoginRequest) => authApi.login(data),
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       if (data.token) {
         localStorage.setItem("token", data.token)
         // Invalidate and refetch cart data after login
@@ -22,7 +22,7 @@ export const useRegister = () => {
 
   return useMutation({
     mutationFn: (data: RegisterRequest) => authApi.register(data),
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       if (data.token) {
         localStorage.setItem("token", data.token)
         // Invalidate and refetch cart data after registration

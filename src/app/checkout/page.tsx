@@ -56,7 +56,7 @@ export default function CheckoutPage() {
       }
       return ordersApi.create(orderData)
     },
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       console.log("Order created successfully:", response)
       // Redirect to success page with order ID
       const orderId = response.id || response.order?.id

@@ -15,9 +15,7 @@ export function FeatureFlagProvider({ children }: FeatureFlagProviderProps) {
     isAnonymous: user?.id ? false : true,
   })
   OpenFeature.setProvider(
-    new DevCycleReactProvider(
-      process.env.NEXT_PUBLIC_DEV_CYCLE_CLIENT_KEY || ""
-    )
+    new DevCycleReactProvider(process.env.NEXT_PUBLIC_DEVCYCLE_CLIENT_KEY || "")
   )
 
   return <OpenFeatureProvider>{children}</OpenFeatureProvider>
