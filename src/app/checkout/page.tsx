@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { useMutation } from "@tanstack/react-query"
@@ -8,6 +9,7 @@ import Image from "next/image"
 import Header from "../../components/layout/Header"
 import { useCartContext } from "../../contexts/CartContext"
 import { useAuth } from "../../contexts/AuthContext"
+import { useBooleanFlag } from "../../hooks/useFeatureFlag"
 import { ordersApi } from "../../services/api"
 
 interface ShippingFormData {
@@ -25,6 +27,29 @@ export default function CheckoutPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const { cartItems, totalPrice, totalItems } = useCartContext()
+
+  // Feature flag for free shipping
+  const { value: isFreeShippingEnabled } = useBooleanFlag(
+    "free-shipping",
+    false
+  )
+
+  // Shipping cost logic
+  const STANDARD_SHIPPING_COST = 15.0
+  const shippingCost = isFreeShippingEnabled ? 0 : STANDARD_SHIPPING_COST
+
+  useEffect(() => {
+    if (isFreeShippingEnabled) {
+      // 50% chance of triggering the error
+      const shouldTriggerError = Math.random() < 0.5
+      if (shouldTriggerError) {
+        // Throw a breaking runtime error
+        throw new Error(
+          "CRITICAL: Free shipping service has encountered a fatal error and cannot proceed. Please contact support immediately."
+        )
+      }
+    }
+  }, [isFreeShippingEnabled])
 
   const {
     register,
@@ -45,6 +70,7 @@ export default function CheckoutPage() {
 
   const createOrderMutation = useMutation({
     mutationFn: async (formData: ShippingFormData) => {
+      const taxAmount = totalPrice * 0.08
       const orderData = {
         shipping_address: `${formData.firstName} ${formData.lastName}\n${formData.address}\n${formData.city}, ${formData.state} ${formData.zipCode}`,
         card_number: "4111111111111111", // Default test card number
@@ -53,6 +79,8 @@ export default function CheckoutPage() {
           quantity: item.quantity,
           price: item.product?.price ?? 0,
         })),
+        shipping_cost: shippingCost,
+        tax_amount: taxAmount,
       }
       return ordersApi.create(orderData)
     },
@@ -375,7 +403,11 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
-                <span className="text-gray-800">Free</span>
+                <span
+                  className={`${isFreeShippingEnabled ? "text-green-600 font-medium" : "text-gray-800"}`}
+                >
+                  {isFreeShippingEnabled ? "FREE!" : formatPrice(shippingCost)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tax</span>
@@ -386,7 +418,7 @@ export default function CheckoutPage() {
               <hr className="my-2" />
               <div className="flex justify-between text-lg font-semibold text-gray-800">
                 <span>Total</span>
-                <span>{formatPrice(totalPrice * 1.08)}</span>
+                <span>{formatPrice((totalPrice + shippingCost) * 1.08)}</span>
               </div>
             </div>
 

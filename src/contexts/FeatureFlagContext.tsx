@@ -11,8 +11,8 @@ interface FeatureFlagProviderProps {
 export function FeatureFlagProvider({ children }: FeatureFlagProviderProps) {
   const { user } = useAuth()
   OpenFeature.setContext({
-    user_id: user?.id ?? "",
-    isAnonymous: user?.id ? false : true,
+    user_id: user?.username ?? "",
+    isAnonymous: user?.username ? false : true,
   })
   OpenFeature.setProvider(
     new DevCycleReactProvider(process.env.NEXT_PUBLIC_DEVCYCLE_CLIENT_KEY || "")
