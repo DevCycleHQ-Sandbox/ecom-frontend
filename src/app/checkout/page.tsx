@@ -9,7 +9,7 @@ import Image from "next/image"
 import Header from "../../components/layout/Header"
 import { useCartContext } from "../../contexts/CartContext"
 import { useAuth } from "../../contexts/AuthContext"
-import { useBooleanFlag } from "../../hooks/useFeatureFlag"
+import { useBooleanFlagDetails } from "@openfeature/react-sdk"
 import { ordersApi } from "../../services/api"
 
 interface ShippingFormData {
@@ -29,7 +29,7 @@ export default function CheckoutPage() {
   const { cartItems, totalPrice, totalItems } = useCartContext()
 
   // Feature flag for free shipping
-  const { value: isFreeShippingEnabled } = useBooleanFlag(
+  const { value: isFreeShippingEnabled } = useBooleanFlagDetails(
     "free-shipping",
     false
   )

@@ -1,0 +1,480 @@
+---
+description: "OpenFeature Integration - MANDATORY for all new features, components, and integrations"
+alwaysApply: true
+---
+
+# OpenFeature Integration - Frontend
+
+When generating new features, pages, or components, ALWAYS integrate OpenFeature flags to control visibility and behavior.
+
+## 🚨 MANDATORY PATTERNS
+
+### 1. Import Requirements
+
+```typescript
+// ✅ CORRECT - OpenFeature hooks
+import {
+  useBooleanFlagValue,
+  useStringFlagValue,
+  useNumberFlagValue,
+  useObjectFlagValue,
+} from "@openfeature/react-sdk"
+
+// ❌ NEVER use DevCycle hooks directly
+import { useVariableValue } from "@devcycle/react-client-sdk"
+```
+
+### 2. Component Feature Toggle Pattern
+
+```typescript
+import { useBooleanFlagValue } from "@openfeature/react-sdk"
+
+const NewFeatureComponent = () => {
+  const enableFeature = useBooleanFlagValue('enable-new-feature', false)
+
+  // MANDATORY: Early return for disabled features
+  if (!enableFeature) {
+    return null // or <FallbackComponent />
+  }
+
+  return (
+    <div>{/* Feature content */}</div>
+  )
+}
+```
+
+### 3. Page-Level Feature Flags
+
+```typescript
+import { useBooleanFlagValue } from "@openfeature/react-sdk"
+
+const NewDashboardPage = () => {
+  const enableNewDashboard = useBooleanFlagValue('show-new-dashboard', false)
+
+  if (!enableNewDashboard) {
+    return <LegacyDashboard />
+  }
+
+  return <NewDashboard />
+}
+```
+
+### 4. Data Fetching with Feature Flags
+
+```typescript
+import { useBooleanFlagValue } from "@openfeature/react-sdk"
+import { useQuery } from '@tanstack/react-query'
+
+const DataComponent = () => {
+  const enableNewAPI = useBooleanFlagValue('enable-new-api', false)
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['new-api-data'],
+    queryFn: fetchNewApiData,
+    enabled: enableNewAPI,
+  })
+
+  if (!enableNewAPI) return <LegacyData />
+  if (isLoading) return <div>Loading data...</div>
+
+  return <div>{/* Render data */}</div>
+}
+```
+
+### 5. Configuration Flags
+
+```typescript
+// Object flags for complex configuration
+const bannerConfig = useObjectFlagValue("banner-config", {
+  enabled: false,
+  title: "",
+  message: "",
+  color: "blue",
+})
+
+// String flags for variants
+const theme = useStringFlagValue("app-theme", "light")
+
+// Number flags for limits
+const maxItems = useNumberFlagValue("max-items", 10)
+```
+
+## 🔧 MANDATORY IMPLEMENTATION RULES
+
+### ✅ ALWAYS Required:
+
+1. **Import from approved sources**: Only `@openfeature/react-sdk`
+2. **Early return pattern**: `if (!flagValue) return <Fallback />`
+3. **Conditional queries**: `enabled: flagValue`
+4. **Document in ../openfeature/draft.md**: Every new flag must be documented
+5. **Kebab-case naming**: `'enable-new-feature'`, `'show-admin-panel'`
+
+### ❌ NEVER Allowed:
+
+1. No fallback UI for disabled features
+2. Complex boolean logic with flags
+3. Queries without loading checks
+
+## 🎯 AUTOMATIC ENFORCEMENT
+
+This rule applies to:
+
+- All new React components (`src/components/**/*.tsx`)
+- All new pages (`src/app/**/*.tsx`)
+- All new hooks (`src/hooks/**/*.ts`)
+- All new services (`src/services/**/*.ts`)
+- Any substantial UI functionality
+
+### Integration Components:
+
+```typescript
+const IntegrationComponent = ({ onBack }) => {
+  const enableIntegration = useBooleanFlagValue('show-integration-name', false)
+
+  if (!enableIntegration) {
+    return (
+      <div className="bg-white mt-12 rounded-lg px-8 py-8 shadow">
+        <Header
+          title="Integration Name"
+          description="This integration is not available."
+          Buttons={<div />}
+          handleBack={onBack}
+        />
+      </div>
+    )
+  }
+
+  return <FullIntegrationUI />
+}
+```
+
+## 📋 DOCUMENTATION REQUIREMENT
+
+**BEFORE implementing any new feature flag**, add to `../openfeature/draft.md`:
+
+````markdown
+## Feature: [Feature Name]
+
+**Flag Key**: `enable-feature-name`
+**Type**: Boolean
+**Default**: false
+**Description**: Controls [feature description]
+
+### Frontend Usage:
+
+```typescript
+const enableFeature = useBooleanFlagValue("enable-feature-name", false)
+```
+````
+
+### Components Using This Flag:
+
+- Component1
+- Component2
+- Page1
+
+````
+
+## 🚨 VALIDATION CHECKLIST
+
+Before approving any code with new features:
+
+- [ ] Uses approved import patterns
+- [ ] Provides fallback UI when disabled
+- [ ] Documents flag in `../openfeature/draft.md`
+- [ ] Uses kebab-case flag naming
+- [ ] Follows early return pattern
+
+## 📱 NEXT.JS SPECIFIC PATTERNS
+
+### Client Components:
+```typescript
+'use client'
+import { useBooleanFlagValue } from "@openfeature/react-sdk"
+
+const ClientComponent = () => {
+  const enableFeature = useBooleanFlagValue('client-feature', false)
+  // Implementation...
+}
+````
+
+### Server Components:
+
+```typescript
+// For server components, coordinate with backend feature flags
+// Use the same flag keys for consistency
+```
+
+## 🎨 UI/UX CONSIDERATIONS
+
+### Fallback UI:
+
+```typescript
+// For disabled features, provide meaningful fallback
+if (!enableFeature) {
+  return (
+    <div className="text-gray-500 text-center py-8">
+      This feature is not available in your current plan.
+    </div>
+  )
+}
+```
+
+## 🔍 DEBUGGING
+
+### Common Issues:
+
+1. **Flag always returns default**: Check provider configuration
+2. **Loading never completes**: Verify FeatureFlagProvider setup
+3. **Inconsistent values**: Check OpenFeature context configuration
+
+### Debug Patterns:
+
+```typescript
+const enableFeature = useBooleanFlagValue("debug-feature", false)
+
+// Debug logging in development
+if (process.env.NODE_ENV === "development") {
+  console.log("Feature flag state:", { enableFeature })
+}
+```
+
+This rule ensures all frontend features are properly gated with OpenFeature flags and follow consistent patterns across the application.
+
+# OpenFeature Integration - Frontend
+
+When generating new features, pages, or components, ALWAYS integrate OpenFeature flags to control visibility and behavior.
+
+## 🚨 MANDATORY PATTERNS
+
+### 1. Import Requirements
+
+```typescript
+// ✅ CORRECT - OpenFeature hooks
+import {
+  useBooleanFlagValue,
+  useStringFlagValue,
+  useNumberFlagValue,
+  useObjectFlagValue,
+} from "@openfeature/react-sdk"
+
+// ❌ NEVER use DevCycle hooks directly
+import { useVariableValue } from "@devcycle/react-client-sdk"
+```
+
+### 2. Component Feature Toggle Pattern
+
+```typescript
+import { useBooleanFlagValue } from "@openfeature/react-sdk"
+
+const NewFeatureComponent = () => {
+  const enableFeature = useBooleanFlagValue('enable-new-feature', false)
+
+  // MANDATORY: Early return for disabled features
+  if (!enableFeature) {
+    return null // or <FallbackComponent />
+  }
+
+  return (
+    <div>{/* Feature content */}</div>
+  )
+}
+```
+
+### 3. Page-Level Feature Flags
+
+```typescript
+import { useBooleanFlagValue } from "@openfeature/react-sdk"
+
+const NewDashboardPage = () => {
+  const enableNewDashboard = useBooleanFlagValue('show-new-dashboard', false)
+
+  if (!enableNewDashboard) {
+    return <LegacyDashboard />
+  }
+
+  return <NewDashboard />
+}
+```
+
+### 4. Data Fetching with Feature Flags
+
+```typescript
+import { useBooleanFlagValue } from "@openfeature/react-sdk"
+import { useQuery } from '@tanstack/react-query'
+
+const DataComponent = () => {
+  const enableNewAPI = useBooleanFlagValue('enable-new-api', false)
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['new-api-data'],
+    queryFn: fetchNewApiData,
+    enabled: enableNewAPI,
+  })
+
+  if (!enableNewAPI) return <LegacyData />
+  if (isLoading) return <div>Loading data...</div>
+
+  return <div>{/* Render data */}</div>
+}
+```
+
+### 5. Configuration Flags
+
+```typescript
+// Object flags for complex configuration
+const bannerConfig = useObjectFlagValue("banner-config", {
+  enabled: false,
+  title: "",
+  message: "",
+  color: "blue",
+})
+
+// String flags for variants
+const theme = useStringFlagValue("app-theme", "light")
+
+// Number flags for limits
+const maxItems = useNumberFlagValue("max-items", 10)
+```
+
+## 🔧 MANDATORY IMPLEMENTATION RULES
+
+### ✅ ALWAYS Required:
+
+1. **Import from approved sources**: Only `@openfeature/react-sdk`
+2. **Early return pattern**: `if (!flagValue) return <Fallback />`
+3. **Conditional queries**: `enabled: flagValue`
+4. **Document in ../openfeature/draft.md**: Every new flag must be documented
+5. **Kebab-case naming**: `'enable-new-feature'`, `'show-admin-panel'`
+
+### ❌ NEVER Allowed:
+
+1. No fallback UI for disabled features
+2. Complex boolean logic with flags
+3. Queries without loading checks
+
+## 🎯 AUTOMATIC ENFORCEMENT
+
+This rule applies to:
+
+- All new React components (`src/components/**/*.tsx`)
+- All new pages (`src/app/**/*.tsx`)
+- All new hooks (`src/hooks/**/*.ts`)
+- All new services (`src/services/**/*.ts`)
+- Any substantial UI functionality
+
+### Integration Components:
+
+```typescript
+const IntegrationComponent = ({ onBack }) => {
+  const enableIntegration = useBooleanFlagValue('show-integration-name', false)
+
+  if (!enableIntegration) {
+    return (
+      <div className="bg-white mt-12 rounded-lg px-8 py-8 shadow">
+        <Header
+          title="Integration Name"
+          description="This integration is not available."
+          Buttons={<div />}
+          handleBack={onBack}
+        />
+      </div>
+    )
+  }
+
+  return <FullIntegrationUI />
+}
+```
+
+## 📋 DOCUMENTATION REQUIREMENT
+
+**BEFORE implementing any new feature flag**, add to `../openfeature/draft.md`:
+
+````markdown
+## Feature: [Feature Name]
+
+**Flag Key**: `enable-feature-name`
+**Type**: Boolean
+**Default**: false
+**Description**: Controls [feature description]
+
+### Frontend Usage:
+
+```typescript
+const enableFeature = useBooleanFlagValue("enable-feature-name", false)
+```
+````
+
+### Components Using This Flag:
+
+- Component1
+- Component2
+- Page1
+
+````
+
+## 🚨 VALIDATION CHECKLIST
+
+Before approving any code with new features:
+
+- [ ] Uses approved import patterns
+- [ ] Provides fallback UI when disabled
+- [ ] Documents flag in `../openfeature/draft.md`
+- [ ] Uses kebab-case flag naming
+- [ ] Follows early return pattern
+
+## 📱 NEXT.JS SPECIFIC PATTERNS
+
+### Client Components:
+```typescript
+'use client'
+import { useBooleanFlagValue } from "@openfeature/react-sdk"
+
+const ClientComponent = () => {
+  const enableFeature = useBooleanFlagValue('client-feature', false)
+  // Implementation...
+}
+````
+
+### Server Components:
+
+```typescript
+// For server components, coordinate with backend feature flags
+// Use the same flag keys for consistency
+```
+
+## 🎨 UI/UX CONSIDERATIONS
+
+### Fallback UI:
+
+```typescript
+// For disabled features, provide meaningful fallback
+if (!enableFeature) {
+  return (
+    <div className="text-gray-500 text-center py-8">
+      This feature is not available in your current plan.
+    </div>
+  )
+}
+```
+
+## 🔍 DEBUGGING
+
+### Common Issues:
+
+1. **Flag always returns default**: Check provider configuration
+2. **Loading never completes**: Verify FeatureFlagProvider setup
+3. **Inconsistent values**: Check OpenFeature context configuration
+
+### Debug Patterns:
+
+```typescript
+const enableFeature = useBooleanFlagValue("debug-feature", false)
+
+// Debug logging in development
+if (process.env.NODE_ENV === "development") {
+  console.log("Feature flag state:", { enableFeature, loading })
+}
+```
+
+This rule ensures all frontend features are properly gated with OpenFeature flags and follow consistent patterns across the application.

@@ -2,33 +2,20 @@
 
 import React from "react"
 import {
-  useBooleanFlag,
-  useStringFlag,
-  useNumberFlag,
-} from "../../hooks/useFeatureFlag"
+  useBooleanFlagValue,
+  useStringFlagValue,
+  useNumberFlagValue,
+} from "@openfeature/react-sdk"
 
 export function FeatureFlagExample() {
   // Example boolean feature flag
-  const { value: showNewFeature, loading: loadingNew } = useBooleanFlag(
-    "show-new-feature",
-    false
-  )
+  const showNewFeature = useBooleanFlagValue("show-new-feature", false)
 
   // Example string feature flag for theme
-  const { value: theme, loading: loadingTheme } = useStringFlag(
-    "app-theme",
-    "light"
-  )
+  const theme = useStringFlagValue("app-theme", "light")
 
   // Example number feature flag for max items
-  const { value: maxItems, loading: loadingMax } = useNumberFlag(
-    "max-cart-items",
-    10
-  )
-
-  if (loadingNew || loadingTheme || loadingMax) {
-    return <div>Loading feature flags...</div>
-  }
+  const maxItems = useNumberFlagValue("max-cart-items", 10)
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
