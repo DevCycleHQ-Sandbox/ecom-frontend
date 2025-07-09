@@ -4,6 +4,8 @@ import Link from "next/link"
 import Image from "next/image"
 import Header from "../components/layout/Header"
 import { useProducts } from "../hooks/useProducts"
+import { Banner } from "@/components/ui"
+import { useObjectFlagValue } from "@openfeature/react-sdk"
 
 export default function Home() {
   const { data: products = [], isLoading, error, refetch } = useProducts()
@@ -14,10 +16,37 @@ export default function Home() {
       currency: "USD",
     }).format(price)
   }
+  const bannerProperties = useObjectFlagValue("banner-props", {
+    title: "",
+    message: "",
+    discount: 0,
+    colour: "green",
+    enabled: false,
+  })
+
+  const PromoBanner = () => {
+    return (
+      <Banner
+        title={bannerProperties.title}
+        message={`${bannerProperties.message} ${bannerProperties.discount}% off all products.`}
+        color={
+          bannerProperties.colour as
+            | "red"
+            | "blue"
+            | "green"
+            | "yellow"
+            | "purple"
+            | "gray"
+            | "indigo"
+        }
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      {bannerProperties.enabled && <PromoBanner />}
 
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section */}

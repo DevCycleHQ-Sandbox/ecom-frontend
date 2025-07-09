@@ -13,6 +13,10 @@ export function FeatureFlagProvider({ children }: FeatureFlagProviderProps) {
   OpenFeature.setContext({
     user_id: user?.username ?? "",
     isAnonymous: user?.username ? false : true,
+    country: "CA",
+    privateCustomData: {
+      "is-premium-user": true,
+    },
   })
   OpenFeature.setProvider(
     new DevCycleReactProvider(process.env.NEXT_PUBLIC_DEVCYCLE_CLIENT_KEY || "")
