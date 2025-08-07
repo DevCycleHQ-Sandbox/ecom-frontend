@@ -1,0 +1,26 @@
+org:
+  id: org_kjcB9CgVuvVjdvxc
+  name: parth-test-org-123
+  display_name: parth test org 123
+project: audience-test-project
+matchPatterns:
+  tsx:
+    - useStringFlagValue\(\s*["']([^"']*)["']
+    - useObjectFlagValue\(\s*["']([^"']*)["']
+    - useBooleanFlagValue\(\s*["']([^"']*)["']
+    - useNumberFlagValue\(\s*["']([^"']*)["']
+  ts:
+    - useStringFlagValue\(\s*["']([^"']*)["']
+    - useObjectFlagValue\(\s*["']([^"']*)["']
+    - useBooleanFlagValue\(\s*["']([^"']*)["']
+    - useNumberFlagValue\(\s*["']([^"']*)["']
+  js:
+    - useStringFlagValue\(\s*["']([^"']*)["']
+    - useObjectFlagValue\(\s*["']([^"']*)["']
+    - useBooleanFlagValue\(\s*["']([^"']*)["']
+    - useNumberFlagValue\(\s*["']([^"']*)["']
+  jsx:
+    - useStringFlagValue\(\s*["']([^"']*)["']
+    - useObjectFlagValue\(\s*["']([^"']*)["']
+    - useBooleanFlagValue\(\s*["']([^"']*)["']
+    - useNumberFlagValue\(\s*["']([^"']*)["']

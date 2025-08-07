@@ -5,7 +5,7 @@ import Image from "next/image"
 import Header from "../components/layout/Header"
 import { useProducts } from "../hooks/useProducts"
 import { Banner } from "@/components/ui"
-import { useObjectFlagValue } from "@openfeature/react-sdk"
+import { useVariableValue } from "@devcycle/nextjs-sdk"
 
 export default function Home() {
   const { data: products = [], isLoading, error, refetch } = useProducts()
@@ -16,7 +16,7 @@ export default function Home() {
       currency: "USD",
     }).format(price)
   }
-  const bannerProperties = useObjectFlagValue("banner-props", {
+  const bannerProperties = useVariableValue("banner-props", {
     title: "",
     message: "",
     discount: 0,
