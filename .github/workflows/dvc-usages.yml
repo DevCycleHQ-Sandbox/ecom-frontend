@@ -1,0 +1,19 @@
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  dvc-code-usages:
+    runs-on: ubuntu-latest
+    name: Fetch DevCycle Code Usages
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: DevCycleHQ/feature-flag-code-usage-action@main
+        with:
+          github-token: ${{ secrets.AUTOMATION_USER_TOKEN }}
+          client-id: ${{ secrets.DVC_CLIENT_ID }}
+          client-secret: ${{ secrets.DVC_CLIENT_SECRET }}
+          project-key: audience-test-project
