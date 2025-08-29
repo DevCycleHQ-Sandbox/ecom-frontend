@@ -1,34 +1,33 @@
 "use client"
 
-import React from "react"
+import React, { Suspense } from "react"
 import {
-  useBooleanFlag,
-  useStringFlag,
-  useNumberFlag,
-} from "../../hooks/useFeatureFlag"
+  useBooleanFlagValue,
+  useStringFlagValue,
+  useNumberFlagValue,
+} from "@openfeature/react-sdk"
 
-export function FeatureFlagExample() {
-  // Example boolean feature flag
-  const { value: showNewFeature, loading: loadingNew } = useBooleanFlag(
+function FeatureFlagContent() {
+  // Example boolean feature flag with suspense
+  const showNewFeature = useBooleanFlagValue(
     "show-new-feature",
-    false
+    false,
+    { suspend: true }
   )
 
-  // Example string feature flag for theme
-  const { value: theme, loading: loadingTheme } = useStringFlag(
+  // Example string feature flag for theme with suspense
+  const theme = useStringFlagValue(
     "app-theme",
-    "light"
+    "light",
+    { suspend: true }
   )
 
-  // Example number feature flag for max items
-  const { value: maxItems, loading: loadingMax } = useNumberFlag(
+  // Example number feature flag for max items with suspense
+  const maxItems = useNumberFlagValue(
     "max-cart-items",
-    10
+    10,
+    { suspend: true }
   )
-
-  if (loadingNew || loadingTheme || loadingMax) {
-    return <div>Loading feature flags...</div>
-  }
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
@@ -92,5 +91,13 @@ export function FeatureFlagExample() {
         </div>
       </div>
     </div>
+  )
+}
+
+export function FeatureFlagExample() {
+  return (
+    <Suspense fallback={<div>Loading feature flags...</div>}>
+      <FeatureFlagContent />
+    </Suspense>
   )
 }

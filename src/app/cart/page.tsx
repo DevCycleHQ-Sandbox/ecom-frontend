@@ -5,6 +5,7 @@ import Image from "next/image"
 import Header from "../../components/layout/Header"
 import { useCartContext } from "../../contexts/CartContext"
 import { useAuth } from "../../contexts/AuthContext"
+import { useBooleanFlagValue } from "@openfeature/react-sdk"
 
 export default function CartPage() {
   const { user } = useAuth()
@@ -17,6 +18,17 @@ export default function CartPage() {
     totalItems,
     isLoading,
   } = useCartContext()
+
+  // Feature flag for free shipping
+  const isFreeShippingEnabled = useBooleanFlagValue(
+    "free-shipping",
+    false
+  )
+
+  const showBanner = useBooleanFlagValue(
+    "show-banner",
+    false
+  )
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -54,6 +66,17 @@ export default function CartPage() {
       <Header />
 
       <main className="container mx-auto px-4 py-8">
+        {isFreeShippingEnabled && showBanner && (
+          <div className="mb-8 bg-gradient-to-r from-green-500 to-green-600 text-white text-center py-4 px-6 rounded-lg shadow-md">
+            <div className="flex items-center justify-center space-x-2">
+              <span className="text-2xl">🚚</span>
+              <span className="text-lg font-semibold">
+                Free shipping now on all orders for a limited time!
+              </span>
+              <span className="text-2xl">✨</span>
+            </div>
+          </div>
+        )}
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Shopping Cart</h1>
 
         {isLoading && (
@@ -191,7 +214,11 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="text-gray-800">Free</span>
+                  {isFreeShippingEnabled ? (
+                    <span className="text-green-600 font-bold">Free</span>
+                  ) : (
+                    <span className="text-gray-800">{formatPrice(totalItems * 12)}</span>
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
@@ -202,7 +229,7 @@ export default function CartPage() {
                 <hr className="my-2" />
                 <div className="flex justify-between text-lg font-semibold text-gray-800">
                   <span>Total</span>
-                  <span>{formatPrice(totalPrice * 1.08)}</span>
+                  <span>{formatPrice((totalPrice + (isFreeShippingEnabled ? 0 : totalItems * 12)) * 1.08)}</span>
                 </div>
               </div>
 
