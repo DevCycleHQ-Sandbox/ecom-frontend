@@ -3,6 +3,8 @@ org:
   name: parth-test-org-123
   display_name: parth test org 123
 project: audience-test-project
+typeGenerator:
+  outputPath: dvcVariableTypes.ts
 matchPatterns:
   tsx:
     - useStringFlagValue\(\s*["']([^"']*)["']

@@ -1,21 +1,22 @@
 "use client"
 
 import React from "react"
+import { useVariableValue } from "@devcycle/nextjs-sdk"
 import {
-  useBooleanFlagValue,
-  useStringFlagValue,
-  useNumberFlagValue,
-} from "@openfeature/react-sdk"
+  FREE_SHIPPING,
+  EXAMPLE_TEXT,
+  TOGGLEBOT_SPEED,
+} from "@/../dvcVariableTypes"
 
 export function FeatureFlagExample() {
   // Example boolean feature flag
-  const showNewFeature = useBooleanFlagValue("show-new-feature", false)
+  const freeShipping = useVariableValue(FREE_SHIPPING, false)
 
-  // Example string feature flag for theme
-  const theme = useStringFlagValue("app-theme", "light")
+  // Example string feature flag
+  const exampleText = useVariableValue(EXAMPLE_TEXT, "light")
 
-  // Example number feature flag for max items
-  const maxItems = useNumberFlagValue("max-cart-items", 10)
+  // Example string feature flag
+  const togglebotSpeed = useVariableValue(TOGGLEBOT_SPEED, "slow")
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
@@ -23,58 +24,56 @@ export function FeatureFlagExample() {
 
       <div className="space-y-4">
         <div className="p-4 border rounded">
-          <h3 className="font-semibold">Boolean Flag: New Feature</h3>
+          <h3 className="font-semibold">Boolean Flag: Free Shipping</h3>
           <p>
-            Flag: <code>show-new-feature</code>
+            Flag: <code>{FREE_SHIPPING}</code>
           </p>
           <p>
             Value:{" "}
-            <span
-              className={showNewFeature ? "text-green-600" : "text-red-600"}
-            >
-              {showNewFeature ? "Enabled" : "Disabled"}
+            <span className={freeShipping ? "text-green-600" : "text-red-600"}>
+              {freeShipping ? "Enabled" : "Disabled"}
             </span>
           </p>
-          {showNewFeature && (
+          {freeShipping && (
             <div className="mt-2 p-2 bg-green-100 rounded">
-              🎉 New feature is enabled!
+              ✅ Free shipping applied!
             </div>
           )}
         </div>
 
         <div className="p-4 border rounded">
-          <h3 className="font-semibold">String Flag: Theme</h3>
+          <h3 className="font-semibold">String Flag: Example Text</h3>
           <p>
-            Flag: <code>app-theme</code>
+            Flag: <code>{EXAMPLE_TEXT}</code>
           </p>
           <p>
             Value:{" "}
             <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-              {theme}
+              {exampleText}
             </span>
           </p>
           <div
             className={`mt-2 p-2 rounded ${
-              theme === "dark" ? "bg-gray-800 text-white" : "bg-gray-100"
+              exampleText === "dark" ? "bg-gray-800 text-white" : "bg-gray-100"
             }`}
           >
-            Current theme: {theme}
+            Example text: {exampleText}
           </div>
         </div>
 
         <div className="p-4 border rounded">
-          <h3 className="font-semibold">Number Flag: Max Cart Items</h3>
+          <h3 className="font-semibold">String Flag: Togglebot Speed</h3>
           <p>
-            Flag: <code>max-cart-items</code>
+            Flag: <code>{TOGGLEBOT_SPEED}</code>
           </p>
           <p>
             Value:{" "}
             <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-              {maxItems}
+              {togglebotSpeed}
             </span>
           </p>
           <div className="mt-2 p-2 bg-blue-100 rounded">
-            Maximum cart items allowed: {maxItems}
+            Speed: {togglebotSpeed}
           </div>
         </div>
       </div>
