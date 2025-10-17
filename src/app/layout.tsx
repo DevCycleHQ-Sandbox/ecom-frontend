@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { QueryProvider } from "../components/providers/QueryProvider"
 import { AppProviders } from "../components/providers/AppProviders"
+import { DevCycleClientsideProvider } from "@devcycle/nextjs-sdk"
+import { getClientContext } from "./devcycle"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,9 +32,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryProvider>
-          <AppProviders>{children}</AppProviders>
-        </QueryProvider>{" "}
+        <DevCycleClientsideProvider context={getClientContext()}>
+          <QueryProvider>
+            <AppProviders>{children}</AppProviders>
+          </QueryProvider>
+        </DevCycleClientsideProvider>
       </body>
     </html>
   )

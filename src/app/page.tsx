@@ -16,13 +16,22 @@ export default function Home() {
       currency: "USD",
     }).format(price)
   }
+  type BannerConfig = {
+    title: string
+    message: string
+    discount: number
+    colour: string
+    enabled: boolean
+  }
   const bannerProperties = useVariableValue("banner-props", {
     title: "",
     message: "",
     discount: 0,
     colour: "green",
     enabled: false,
-  })
+  }) as BannerConfig
+
+  // Popular products feature removed (flag cleaned up)
 
   const PromoBanner = () => {
     return (
@@ -64,6 +73,8 @@ export default function Home() {
             Shop Now
           </Link>
         </section>
+
+        {/* Popular Products - removed due to completed feature cleanup */}
 
         {/* Featured Products */}
         <section>
